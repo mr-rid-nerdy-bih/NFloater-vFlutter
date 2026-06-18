@@ -1,111 +1,98 @@
-# NeutraFloater Dashboard
+# NeutraFloater Control App
 
+[![Flutter](https://img.shields.io/badge/Platform-Android%20%7C%20iOS-02569B?logo=flutter&logoColor=white)](https://flutter.dev)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Status: Active](https://img.shields.io/badge/Status-Active-brightgreen.svg)]()
 
-An intuitive, real-time wireless dashboard application designed to monitor, control, and calibrate the **NeutraFloater** system. Utilizing robust Wi-Fi technology, this application bridges the gap between hardware telemetry and user control, providing seamless data visualization and micro-adjustments on the fly.
+A real-time, cross-platform mobile application built with Flutter to monitor, calibrate, and control the **NeutraFloater** hardware system. Operating over a direct Wi-Fi connection, this app provides fluid data visualization and instant manual overrides directly from any Android or iOS device.
 
 ---
 
 ## Abstract
 
-The **NeutraFloater Dashboard** serves as the primary control intelligence hub for the NeutraFloater hardware system. By establishing a dedicated local or networked Wi-Fi connection, the app continuously fetches telemetry data, monitors buoyancy/stabilization metrics, and allows operators to send instantaneous command overrides. This eliminates the need for restrictive physical tethering, enabling safe and flexible remote diagnostics.
+The **NeutraFloater Control App** serves as the mobile command center for the NeutraFloater hardware unit. By establishing a dedicated local Wi-Fi link with the hardware, the app continuously processes streaming telemetry packets, monitors real-time stabilization/buoyancy metrics, and transmits zero-latency command configurations. This untethers operators from physical hardware lines, allowing safe and efficient field diagnostics.
 
 ---
 
 ## Key Features
 
-* **Real-Time Telemetry Streaming:** Low-latency data visualization of pitch, roll, depth, and stabilization variables.
-* **Wireless Control & Overrides:** Direct command transmission over Wi-Fi (via WebSockets / HTTP REST) for instant manual adjustments.
-* **Dynamic Calibration Tools:** On-screen wizards to balance, tare, and zero the system sensors before deployment.
-* **Historical Data Logging:** Local storage capabilities to review performance graphs, error logs, and operational trends.
-* **Responsive UI:** Optimized for both field tablets and desktop control stations.
+* **Real-Time Telemetry Graphs:** Smooth, multi-axis rendering of pitch, roll, depth, and stabilization variables via hardware streams.
+* **Wireless Command Overrides:** Low-latency manual controls over Wi-Fi (via WebSockets or UDP) for rapid adjustments.
+* **On-Field Calibration Suite:** Interactive setup wizards to balance, tare, and zero system sensors prior to deployment.
+* **Local Session Logging:** Keeps a local history of run logs, performance metrics, and system errors for offline diagnostics.
+* **Native Performance:** Fully compiled native UI ensuring smooth 60fps/120fps rendering on both iOS and Android.
 
 ---
 
-## System Architecture
+## Core Architecture (Mobile-to-Hardware)
 
-The NeutraFloater ecosystem relies on a seamless hardware-to-software pipeline:
+The application establishes a direct network socket pipeline with the floating unit:
 
 
 ```
 
 +---------------------------+               +----------------------------+
-|   NeutraFloater Hardware  |  Wi-Fi Local  |    NeutraFloater App       |
-|  (Sensors, ESP32/STM32,   | ------------> |  (Real-Time Dashboard,     |
-|   Wi-Fi Module, Actuators)| <------------ |   Control UI & Graphs)     |
-+---------------------------+   TCP/UDP/WS  +----------------------------+
+|   NeutraFloater Hardware  |  Local Wi-Fi  |   Flutter Mobile App       |
+|  (Sensors, ESP32/STM32,   | ------------> |  (StreamBuilder UI,        |
+|   Wi-Fi Module, Actuators)| <------------ |   fl_chart Telemetry)      |
++---------------------------+  Sockets/WS   +----------------------------+
 
 ```
 
-1. **Hardware Layer:** The core floating unit handles physical stabilization and hosts a local Wi-Fi Access Point (AP) or connects to a designated network.
-2. **Communication Protocol:** Employs lightweight data exchange formats (JSON over WebSockets or MQTT) to ensure rapid response times.
-3. **Application Layer:** The dashboard parses incoming data packets into clean, scannable visual gauges.
+1. **Hardware Layer:** The physical unit acts as a local Wi-Fi Access Point (AP) or connects to a shared field router.
+2. **Data Pipeline:** Continuous data packets are broadcast as JSON strings over WebSockets or raw UDP packets.
+3. **Application Layer:** Flutter consumes the data stream using a `StreamBuilder` or state management provider, repainting the UI seamlessly as packets arrive.
 
 ---
 
-## Getting Started
+## Technical Stack
+
+* **Framework:** Flutter (Dart)
+* **State Management:** Provider / Riverpod / BLoC (for clean telemetry stream distribution)
+* **Real-time Sockets:** `web_socket_channel` or native Dart `RawDatagramSocket` (UDP)
+* **HTTP Networking:** `dio` or `http` (for initial device handshakes/firmware checks)
+* **Data Visualization:** `fl_chart` (for high-performance real-time telemetry plotting)
+
+---
+
+## Getting Started (Development)
 
 ### Prerequisites
 
-Before launching the dashboard, ensure you have the following installed:
-* [Node.js](https://nodejs.org/) (v18.0 or higher recommended)
-* [npm](https://www.npmjs.com/) or [yarn](https://yarnpkg.com/)
+* [Flutter SDK](https://docs.flutter.dev/get-started/install) (Latest stable version)
+* Android Studio (for Android toolchain) / Xcode (for iOS toolchain, macOS required)
 
-### Installation
+### Setup & Run
 
 1. **Clone the repository:**
    ```bash
-   git clone [https://github.com/yourusername/neutrafloater-dashboard.git](https://github.com/yourusername/neutrafloater-dashboard.git)
-   cd neutrafloater-dashboard
+   git clone [https://github.com/yourusername/neutrafloater-app.git](https://github.com/yourusername/neutrafloater-app.git)
+   cd neutrafloater-app
 
 ```
 ```
 
-2. **Install dependencies:**
+2. **Fetch dependencies:**
 ```bash
-npm install
+flutter pub get
 
 ```
 
 
-3. **Configure Environment Variables:**
-Create a `.env` file in the root directory and specify your hardware IP address:
-```env
-VITE_FLOATER_IP=11.22.33.44
-VITE_WS_PORT=8080
-
-```
-
-
-4. **Run the Development Server:**
+3. **Run on a connected device/emulator:**
 ```bash
-npm run dev
+flutter run
 
 ```
 
 
-Open your browser and navigate to `http://localhost:5173` (or the port specified in your terminal).
 
 ---
 
-## Connection Strategy (Wi-Fi)
-
-To connect the application to the physical NeutraFloater device:
+## Field Connection Protocol
 
 1. Power on the **NeutraFloater** hardware unit.
-2. On your host device (PC/Tablet), connect to the Wi-Fi network: `NeutraFloater_AP_XXXX`.
-3. Launch this dashboard application.
-4. Check the top status bar to verify the connection indicator reads **CONNECTED**.
-
----
-
-## Development Stack (Suggested)
-
-* **Frontend Framework:** React.js / Vue.js / Svelte (via Vite)
-* **Styling:** Tailwind CSS (for modern, highly responsive utility layouts)
-* **Charts & Gauges:** Chart.js / Recharts (for fluid real-time data plotting)
-* **Networking:** Axios (HTTP) & Native WebSockets (for continuous telemetry)
+2. Open your mobile device's Wi-Fi settings and connect to the network: `NeutraFloater_AP_XXXX`.
+3. Launch the app. The system will auto-detect the gateway IP and transition from **"Searching for Device..."** to **"Connected"**.
 
 ---
 
